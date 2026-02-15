@@ -17,6 +17,9 @@ local function compress()
 	return function(c: Context, next: () -> ())
 		next()
 		local acceptEncoding = c.req.headers["accept-encoding"]
+		if not acceptEncoding then
+			return
+		end
 		local encoding
 		for _, type in ENCODINGS do
 			if acceptEncoding:find(type.name) then
