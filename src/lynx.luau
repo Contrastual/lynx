@@ -186,10 +186,16 @@ function Lynx.dispatch(self: Lynx, req: net.ServeRequest): net.ServeResponse
 		end)
 	end
 
-	local success, result = pcall(dispatch, 1)
+	local errorResult: any
+	local success = xpcall(dispatch, function(err: any)
+		if type(err) == "table" and type(err.message) == "string" then
+			err = err.message
+		end
+		errorResult = self.errorHandler(context, debug.traceback(err :: string, 2))
+	end, 1)
 
 	if not success then
-		return self.errorHandler(context, result)
+		return errorResult
 	elseif context.finalized then
 		return context.res
 	else
